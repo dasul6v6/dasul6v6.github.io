@@ -56,16 +56,30 @@ const wordList = [
     "야근각", "연차휴가", "월급루팡", "사내연애", "소확행", "월요병"
 ];
 
-let board = wordList.map((word, index) => ({
-    id: index,
-    word: word,
-    owner: null
-}));
+function shuffleWords(words) {
+    const copiedWords = [...words];
 
+    for (let i = copiedWords.length - 1; i > 0; i--) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+        [copiedWords[i], copiedWords[randomIndex]] = [copiedWords[randomIndex], copiedWords[i]];
+    }
+
+    return copiedWords;
+}
+
+function createBoard() {
+    return shuffleWords(wordList).map((word, index) => ({
+        id: index,
+        word,
+        owner: null
+    }));
+}
+
+let board = createBoard();
 let players = { p1: null, p2: null };
 
 // 타이머 변수
-let timeLeft = 70; // 70초
+let timeLeft = 90; // 90초
 let timerInterval = null;
 let gameStarted = false;
 
@@ -119,7 +133,7 @@ io.on('connection', (socket) => {
     // 💡 다시 시작 요청 처리
     socket.on('requestRestart', () => {
         // 1. 보드판 소유권 전체 초기화
-        board.forEach(tile => tile.owner = null);
+        board = createBoard();
         
         // 2. 기존 타이머가 돌고 있었다면 정지 및 시간 리셋
         clearInterval(timerInterval);

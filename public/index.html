@@ -1,36 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NS 타자 땅따먹기 대결</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-    <div id="game-layout">
-        <!-- 왼쪽 캐릭터 -->
-        <div class="team-panel team-shuri">
-            <img src="shuri.png" alt="슈리팀 캐릭터" class="team-character">
-            <div class="team-name">슈리팀</div>
+    <main id="game-layout" aria-label="NS 타자 땅따먹기 대결">
+        <section class="team-panel team-shuri" aria-label="슈리 팀">
+            <img src="shuri.png" alt="슈리 캐릭터" class="team-character">
+            <div class="team-name">슈리</div>
             <div id="shuri-score" class="team-score">0</div>
-        </div>
+        </section>
 
-        <!-- 게임 영역 -->
-        <div id="game-container">
-            <h1>NS 타자 판뒤집기 대결</h1>
+        <section id="game-container">
+            <h1>NS 타자 땅따먹기 대결</h1>
             <div id="role-display">접속 중...</div>
-            
+
             <div id="timer-display">남은 시간: 01:30</div>
-            <div id="score-display">슈리팀: 0 | 챌리팀: 0</div>
-            
-            <div id="board"></div>
+            <div id="score-display">슈리: 0 | 챌리: 0</div>
+
+            <div id="board" aria-label="단어 보드"></div>
 
             <div id="input-container">
-                <input type="text" id="word-input" placeholder="다른 플레이어를 기다리는 중입니다..." autocomplete="off" disabled>
-                <button id="restart-btn">게임 다시 시작</button>
+                <input
+                    type="text"
+                    id="word-input"
+                    placeholder="다른 플레이어를 기다리는 중입니다..."
+                    autocomplete="off"
+                    disabled
+                >
+                <button id="restart-btn" type="button">게임 다시 시작</button>
             </div>
-        </div>
 
-        <!-- 오른쪽 캐릭터 -->
-        <div class="team-panel team-challi">
-            <img src="challi.png" alt="챌리팀 캐릭터" class="team-character">
-            <div class="team-name">챌리팀</div>
+            <div id="waiting-overlay" class="waiting-overlay hidden">
+                <div class="waiting-card">
+                    <div class="waiting-character-wrap">
+                        <img id="waiting-character" src="shuri.png" alt="내 캐릭터" class="waiting-character">
+                    </div>
+
+                    <div id="waiting-role" class="waiting-role">당신은 슈리입니다</div>
+                    <div id="waiting-title" class="waiting-title">다른 유저를 기다리는 중...</div>
+                    <div class="waiting-desc">
+                        상대가 접속하면 자동으로 대결이 시작됩니다.
+                    </div>
+
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="team-panel team-challi" aria-label="챌리 팀">
+            <img src="challi.png" alt="챌리 캐릭터" class="team-character">
+            <div class="team-name">챌리</div>
             <div id="challi-score" class="team-score">0</div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
 </body>
+</html>
