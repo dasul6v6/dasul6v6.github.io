@@ -167,7 +167,7 @@ function renderBoard(board) {
         if (tile.owner === 'p2') p2Count++;
     });
 
-    scoreDisplay.innerText = `슈리: ${p1Count} | 챌리: ${p2Count}`;
+    scoreDisplay.innerText = `SHURI ${p1Count}  VS  ${p2Count} CHALLI`;
     shuriScoreDisplay.innerText = p1Count;
     challiScoreDisplay.innerText = p2Count;
 }
