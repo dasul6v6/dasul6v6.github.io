@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>NS 타자 판뒤집기 대결</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>NS 타자 판뒤집기 대결</h1>
+        <div id="role-display">접속 중...</div>
+        
+        <div id="timer-display">남은 시간: 01:30</div>
+        <div id="score-display">블루: 0 | 레드: 0</div>
+        
+        <div id="board"></div>
+
+        <div id="input-container">
+            <input type="text" id="word-input" placeholder="다른 플레이어를 기다리는 중입니다..." autocomplete="off" disabled>
+            <button id="restart-btn">게임 다시 시작</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
