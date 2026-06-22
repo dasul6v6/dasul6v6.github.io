@@ -135,19 +135,6 @@ const wordBoards = [
 
 /**
  * 방 목록
- *
- * rooms = {
- *   ABC123: {
- *      board,
- *      players: { p1, p2 },
- *      ready: { p1, p2 },
- *      timeLeft,
- *      timerInterval,
- *      countdownInterval,
- *      gameStarted,
- *      isCountingDown
- *   }
- * }
  */
 const rooms = {};
 
@@ -156,6 +143,7 @@ function shuffleWords(words) {
 
   for (let i = copiedWords.length - 1; i > 0; i--) {
     const randomIndex = Math.floor(Math.random() * (i + 1));
+
     [copiedWords[i], copiedWords[randomIndex]] = [
       copiedWords[randomIndex],
       copiedWords[i],
@@ -271,6 +259,67 @@ function emitRoomStatus(roomId) {
 }
 
 /**
+ * 방에서 특정 소켓 제거
+ */
+function leaveRoomBySocket(socket, roomId) {
+  const room = rooms[roomId];
+  if (!room) return;
+
+  const wasP1 = room.players.p1 === socket.id;
+  const wasP2 = room.players.p2 === socket.id;
+
+  if (!wasP1 && !wasP2) return;
+
+  if (wasP1) {
+    room.players.p1 = null;
+    room.ready.p1 = false;
+  }
+
+  if (wasP2) {
+    room.players.p2 = null;
+    room.ready.p2 = false;
+  }
+
+  socket.leave(roomId);
+
+  clearInterval(room.timerInterval);
+  clearInterval(room.countdownInterval);
+
+  room.gameStarted = false;
+  room.isCountingDown = false;
+  room.timeLeft = 90;
+
+  /**
+   * 상대가 남아 있는 경우:
+   * 보드 소유권 초기화해서 새 게임 대기 상태로 돌림
+   */
+  if (room.players.p1 || room.players.p2) {
+    room.board = createBoard();
+
+    io.to(roomId).emit("boardReset", {
+      board: room.board,
+      timeLeft: room.timeLeft,
+    });
+
+    io.to(roomId).emit("readyStatus", {
+      ready: room.ready,
+    });
+
+    emitRoomStatus(roomId);
+  }
+
+  /**
+   * 둘 다 나간 경우 방 삭제
+   */
+  if (!room.players.p1 && !room.players.p2) {
+    delete rooms[roomId];
+    console.log(`빈 방 삭제: ${roomId}`);
+  }
+
+  emitRoomList();
+}
+
+/**
  * 소켓 연결
  */
 io.on("connection", (socket) => {
@@ -362,10 +411,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    /**
-     * 비어 있는 자리에 입장
-     * 보통은 p2로 들어가지만, p1이 나간 방이면 p1로 들어감
-     */
     if (!room.players.p1) {
       room.players.p1 = socket.id;
       currentRole = "p1";
@@ -446,7 +491,29 @@ io.on("connection", (socket) => {
   });
 
   /**
-   * 다시 시작
+   * 홈으로 가기
+   */
+  socket.on("leaveRoom", () => {
+    if (!currentRoomId) {
+      socket.emit("leftRoom");
+      return;
+    }
+
+    const leavingRoomId = currentRoomId;
+
+    leaveRoomBySocket(socket, leavingRoomId);
+
+    currentRoomId = null;
+    currentRole = null;
+
+    socket.emit("leftRoom");
+
+    console.log(`${socket.id} 방 나가기: ${leavingRoomId}`);
+  });
+
+  /**
+   * 예전 다시 시작 버튼 호환용
+   * 지금은 client에서 사용하지 않아도 됨
    */
   socket.on("requestRestart", () => {
     const room = rooms[currentRoomId];
@@ -483,39 +550,12 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("유저 접속 해제:", socket.id);
 
-    const room = rooms[currentRoomId];
-    if (!room) return;
+    if (!currentRoomId) return;
 
-    if (room.players.p1 === socket.id) {
-      room.players.p1 = null;
-      room.ready.p1 = false;
-    }
+    leaveRoomBySocket(socket, currentRoomId);
 
-    if (room.players.p2 === socket.id) {
-      room.players.p2 = null;
-      room.ready.p2 = false;
-    }
-
-    clearInterval(room.timerInterval);
-    clearInterval(room.countdownInterval);
-
-    room.gameStarted = false;
-    room.isCountingDown = false;
-    room.timeLeft = 90;
-
-    io.to(currentRoomId).emit("boardReset", {
-      board: room.board,
-      timeLeft: room.timeLeft,
-    });
-
-    emitRoomStatus(currentRoomId);
-
-    if (!room.players.p1 && !room.players.p2) {
-      delete rooms[currentRoomId];
-      console.log(`빈 방 삭제: ${currentRoomId}`);
-    }
-
-    emitRoomList();
+    currentRoomId = null;
+    currentRole = null;
   });
 });
 

@@ -6,8 +6,9 @@
     <title>NS 타자 땅따먹기 대결</title>
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
-    <main id="game-layout" aria-label="NS 타자 땅따먹기 대결">
+    <main id="game-layout" class="home-mode" aria-label="NS 타자 땅따먹기 대결">
       <section class="team-panel team-shuri" aria-label="슈리 팀">
         <img src="shuri.png" alt="슈리 캐릭터" class="team-character" />
         <div class="team-name">슈리</div>
@@ -19,6 +20,12 @@
         <div class="battle-badge">슈리 VS 챌리</div>
 
         <div id="role-display">방을 만들거나 입장해주세요.</div>
+
+        <div id="home-vs-hero" class="home-vs-hero">
+          <div class="home-team home-shuri">슈리</div>
+          <div class="home-vs">VS</div>
+          <div class="home-team home-challi">챌리</div>
+        </div>
 
         <!-- 처음 화면: 방 만들기 / 방 입장 / 방 리스트 -->
         <div id="room-start-panel" class="room-panel">
@@ -69,7 +76,7 @@
             autocomplete="off"
             disabled
           />
-          <button id="restart-btn" type="button">게임 다시 시작</button>
+          <button id="restart-btn" type="button">홈으로 가기</button>
         </div>
 
         <!-- 대기 오버레이 -->
@@ -98,6 +105,15 @@
               <strong id="waiting-room-code">------</strong>
               <button id="waiting-copy-room-btn" type="button">복사</button>
             </div>
+
+            <!-- 대기 팝업 안 Ready 버튼 -->
+            <button
+              id="waiting-ready-btn"
+              class="waiting-ready-btn hidden"
+              type="button"
+            >
+              Ready
+            </button>
 
             <div class="waiting-desc">
               방을 만든 뒤 상대에게 방 코드를 공유해주세요. 두 플레이어가 모두
