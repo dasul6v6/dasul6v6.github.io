@@ -20,7 +20,7 @@
 
         <div id="role-display">방을 만들거나 입장해주세요.</div>
 
-        <!-- 처음 화면: 방 만들기 / 방 입장 -->
+        <!-- 처음 화면: 방 만들기 / 방 입장 / 방 리스트 -->
         <div id="room-start-panel" class="room-panel">
           <button id="create-room-btn" type="button">방 만들기</button>
 
@@ -33,9 +33,17 @@
             />
             <button id="join-room-btn" type="button">방 입장</button>
           </div>
+
+          <div class="room-list-wrap">
+            <div class="room-list-title">현재 생성된 방</div>
+
+            <div id="room-list" class="room-list">
+              <div class="empty-room-message">새로운 방을 만들어주세요!</div>
+            </div>
+          </div>
         </div>
 
-        <!-- 방 입장 후 화면: 방 코드 / Ready -->
+        <!-- 방 생성/입장 후 화면: 방 코드 / Ready -->
         <div id="room-ready-panel" class="room-panel hidden">
           <div class="room-code-box">
             <span class="room-code-label">방 코드</span>
@@ -45,7 +53,7 @@
 
           <div id="room-info">상대 플레이어를 기다리는 중입니다.</div>
 
-          <button id="ready-btn" type="button">Ready</button>
+          <button id="ready-btn" type="button" disabled>Ready</button>
         </div>
 
         <div id="timer-display">남은 시간: 01:30</div>
@@ -64,6 +72,7 @@
           <button id="restart-btn" type="button">게임 다시 시작</button>
         </div>
 
+        <!-- 대기 오버레이 -->
         <div id="waiting-overlay" class="waiting-overlay hidden">
           <div class="waiting-card">
             <div class="waiting-character-wrap">
@@ -79,6 +88,17 @@
             <div id="waiting-title" class="waiting-title">
               방을 만들거나 입장해주세요
             </div>
+
+            <!-- 대기 팝업 안 방 코드 표시 -->
+            <div
+              id="waiting-room-code-box"
+              class="waiting-room-code-box hidden"
+            >
+              <span class="waiting-room-code-label">방 코드</span>
+              <strong id="waiting-room-code">------</strong>
+              <button id="waiting-copy-room-btn" type="button">복사</button>
+            </div>
+
             <div class="waiting-desc">
               방을 만든 뒤 상대에게 방 코드를 공유해주세요. 두 플레이어가 모두
               Ready를 누르면 5초 뒤 게임이 시작됩니다.

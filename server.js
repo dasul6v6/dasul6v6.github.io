@@ -8,8 +8,13 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static("public"));
 
 /**
+ * 최대 방 개수
+ */
+const MAX_ROOMS = 5;
+
+/**
  * 여러 개의 단어판
- * 게임 생성 / 다시 시작 시 이 중 하나를 랜덤으로 선택
+ * 방 생성 / 다시 시작 시 이 중 하나를 랜덤으로 선택
  */
 const wordBoards = [
   [
@@ -130,11 +135,12 @@ const wordBoards = [
 
 /**
  * 방 목록
+ *
  * rooms = {
  *   ABC123: {
  *      board,
- *      players,
- *      ready,
+ *      players: { p1, p2 },
+ *      ready: { p1, p2 },
  *      timeLeft,
  *      timerInterval,
  *      countdownInterval,
@@ -197,6 +203,35 @@ function createRoom(socketId) {
   };
 }
 
+/**
+ * 방 리스트 생성
+ */
+function getRoomList() {
+  return Object.keys(rooms).map((roomId) => {
+    const room = rooms[roomId];
+
+    const playerCount = (room.players.p1 ? 1 : 0) + (room.players.p2 ? 1 : 0);
+
+    return {
+      roomId,
+      playerCount,
+      maxPlayers: 2,
+      gameStarted: room.gameStarted,
+      isCountingDown: room.isCountingDown,
+    };
+  });
+}
+
+/**
+ * 모든 접속자에게 방 리스트 전송
+ */
+function emitRoomList() {
+  io.emit("roomList", getRoomList());
+}
+
+/**
+ * 방 상태 메시지
+ */
 function getRoomStatusMessage(room) {
   if (!room.players.p1 || !room.players.p2) {
     return "상대 플레이어를 기다리는 중입니다.";
@@ -217,6 +252,9 @@ function getRoomStatusMessage(room) {
   return "두 플레이어 모두 Ready 완료!";
 }
 
+/**
+ * 해당 방에만 방 상태 전송
+ */
 function emitRoomStatus(roomId) {
   const room = rooms[roomId];
   if (!room) return;
@@ -232,6 +270,9 @@ function emitRoomStatus(roomId) {
   });
 }
 
+/**
+ * 소켓 연결
+ */
 io.on("connection", (socket) => {
   console.log("유저 접속:", socket.id);
 
@@ -239,9 +280,27 @@ io.on("connection", (socket) => {
   let currentRole = null;
 
   /**
+   * 접속하자마자 현재 방 리스트 전송
+   */
+  socket.emit("roomList", getRoomList());
+
+  /**
    * 방 만들기
    */
   socket.on("createRoom", () => {
+    if (currentRoomId) {
+      socket.emit("createRoomError", "이미 방에 입장해 있습니다.");
+      return;
+    }
+
+    if (Object.keys(rooms).length >= MAX_ROOMS) {
+      socket.emit(
+        "createRoomError",
+        `방은 최대 ${MAX_ROOMS}개까지만 만들 수 있습니다.`,
+      );
+      return;
+    }
+
     let roomId = createRoomId();
 
     while (rooms[roomId]) {
@@ -264,6 +323,7 @@ io.on("connection", (socket) => {
     });
 
     emitRoomStatus(roomId);
+    emitRoomList();
 
     console.log(`${socket.id} 방 생성: ${roomId}`);
   });
@@ -272,6 +332,11 @@ io.on("connection", (socket) => {
    * 방 입장
    */
   socket.on("joinRoom", (roomId) => {
+    if (currentRoomId) {
+      socket.emit("joinError", "이미 방에 입장해 있습니다.");
+      return;
+    }
+
     const normalizedRoomId = String(roomId || "")
       .trim()
       .toUpperCase();
@@ -297,10 +362,19 @@ io.on("connection", (socket) => {
       return;
     }
 
-    room.players.p2 = socket.id;
+    /**
+     * 비어 있는 자리에 입장
+     * 보통은 p2로 들어가지만, p1이 나간 방이면 p1로 들어감
+     */
+    if (!room.players.p1) {
+      room.players.p1 = socket.id;
+      currentRole = "p1";
+    } else {
+      room.players.p2 = socket.id;
+      currentRole = "p2";
+    }
 
     currentRoomId = normalizedRoomId;
-    currentRole = "p2";
 
     socket.join(normalizedRoomId);
 
@@ -313,8 +387,11 @@ io.on("connection", (socket) => {
     });
 
     emitRoomStatus(normalizedRoomId);
+    emitRoomList();
 
-    console.log(`${socket.id} 방 입장: ${normalizedRoomId}`);
+    console.log(
+      `${socket.id} 방 입장: ${normalizedRoomId}, 역할: ${currentRole}`,
+    );
   });
 
   /**
@@ -370,8 +447,6 @@ io.on("connection", (socket) => {
 
   /**
    * 다시 시작
-   * 현재 방의 두 플레이어는 유지하고,
-   * 보드/Ready/타이머만 초기화
    */
   socket.on("requestRestart", () => {
     const room = rooms[currentRoomId];
@@ -399,6 +474,7 @@ io.on("connection", (socket) => {
     });
 
     emitRoomStatus(currentRoomId);
+    emitRoomList();
   });
 
   /**
@@ -438,6 +514,8 @@ io.on("connection", (socket) => {
       delete rooms[currentRoomId];
       console.log(`빈 방 삭제: ${currentRoomId}`);
     }
+
+    emitRoomList();
   });
 });
 
@@ -458,6 +536,8 @@ function startCountdown(roomId) {
     count,
   });
 
+  emitRoomList();
+
   room.countdownInterval = setInterval(() => {
     count--;
 
@@ -473,6 +553,7 @@ function startCountdown(roomId) {
       io.to(roomId).emit("gameStart");
       io.to(roomId).emit("timerUpdate", room.timeLeft);
 
+      emitRoomList();
       startTimer(roomId);
     }
   }, 1000);
@@ -540,6 +621,8 @@ function endGame(roomId, reason) {
     p1Count,
     p2Count,
   });
+
+  emitRoomList();
 }
 
 http.listen(PORT, () => {

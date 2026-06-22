@@ -14,12 +14,18 @@ const waitingCharacter = document.getElementById("waiting-character");
 const waitingRole = document.getElementById("waiting-role");
 const waitingTitle = document.getElementById("waiting-title");
 
+const waitingRoomCodeBox = document.getElementById("waiting-room-code-box");
+const waitingRoomCode = document.getElementById("waiting-room-code");
+const waitingCopyRoomBtn = document.getElementById("waiting-copy-room-btn");
+
 const roomStartPanel = document.getElementById("room-start-panel");
 const roomReadyPanel = document.getElementById("room-ready-panel");
 
 const createRoomBtn = document.getElementById("create-room-btn");
 const joinRoomBtn = document.getElementById("join-room-btn");
 const roomIdInput = document.getElementById("room-id-input");
+
+const roomList = document.getElementById("room-list");
 
 const roomCodeDisplay = document.getElementById("room-code-display");
 const copyRoomBtn = document.getElementById("copy-room-btn");
@@ -29,6 +35,9 @@ const readyBtn = document.getElementById("ready-btn");
 let myRole = null;
 let myRoomId = null;
 
+/**
+ * 최초 화면 상태
+ */
 wordInput.disabled = true;
 wordInput.placeholder = "방을 만들거나 입장해주세요.";
 restartBtn.disabled = true;
@@ -37,14 +46,23 @@ readyBtn.disabled = true;
 hideWaitingOverlay();
 updateTimerUI(90);
 
+/**
+ * 방 만들기
+ */
 createRoomBtn.addEventListener("click", () => {
   socket.emit("createRoom");
 });
 
+/**
+ * 방 입장 버튼
+ */
 joinRoomBtn.addEventListener("click", () => {
   joinRoom();
 });
 
+/**
+ * 방 코드 입력 후 Enter로 입장
+ */
 roomIdInput.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
   joinRoom();
@@ -61,6 +79,9 @@ function joinRoom() {
   socket.emit("joinRoom", roomId);
 }
 
+/**
+ * Ready 버튼
+ */
 readyBtn.addEventListener("click", () => {
   if (!myRoomId) {
     alert("먼저 방을 만들거나 입장해주세요.");
@@ -73,7 +94,21 @@ readyBtn.addEventListener("click", () => {
   readyBtn.innerText = "READY 완료";
 });
 
+/**
+ * 방 코드 복사 버튼
+ */
 copyRoomBtn.addEventListener("click", async () => {
+  copyRoomCode();
+});
+
+/**
+ * 대기 팝업 안 방 코드 복사 버튼
+ */
+waitingCopyRoomBtn.addEventListener("click", async () => {
+  copyRoomCode();
+});
+
+async function copyRoomCode() {
   if (!myRoomId) return;
 
   try {
@@ -82,8 +117,11 @@ copyRoomBtn.addEventListener("click", async () => {
   } catch (error) {
     alert(`방 코드: ${myRoomId}`);
   }
-});
+}
 
+/**
+ * 다시 시작 버튼
+ */
 restartBtn.addEventListener("click", () => {
   if (!myRoomId) {
     alert("먼저 방을 만들거나 입장해주세요.");
@@ -93,6 +131,16 @@ restartBtn.addEventListener("click", () => {
   socket.emit("requestRestart");
 });
 
+/**
+ * 서버에서 방 리스트 수신
+ */
+socket.on("roomList", (rooms) => {
+  renderRoomList(rooms);
+});
+
+/**
+ * 방 생성/입장 성공
+ */
 socket.on("roomJoined", (data) => {
   myRole = data.role;
   myRoomId = data.roomId;
@@ -102,6 +150,9 @@ socket.on("roomJoined", (data) => {
 
   roomCodeDisplay.innerText = myRoomId;
   roomInfo.innerText = "상대 플레이어를 기다리는 중입니다.";
+
+  waitingRoomCode.innerText = myRoomId;
+  waitingRoomCodeBox.classList.remove("hidden");
 
   readyBtn.disabled = false;
   readyBtn.innerText = "Ready";
@@ -122,6 +173,9 @@ socket.on("roomJoined", (data) => {
   showWaitingOverlay("room");
 });
 
+/**
+ * 방 상태 변경
+ */
 socket.on("roomStatus", (data) => {
   roomInfo.innerText = data.message;
 
@@ -133,6 +187,9 @@ socket.on("roomStatus", (data) => {
   }
 });
 
+/**
+ * Ready 상태 변경
+ */
 socket.on("readyStatus", (data) => {
   const p1ReadyText = data.ready.p1 ? "슈리 READY" : "슈리 대기 중";
   const p2ReadyText = data.ready.p2 ? "챌리 READY" : "챌리 대기 중";
@@ -144,6 +201,9 @@ socket.on("readyStatus", (data) => {
   }
 });
 
+/**
+ * 5초 카운트다운 시작
+ */
 socket.on("countdownStart", (data) => {
   roomInfo.innerText = data.message;
 
@@ -157,6 +217,9 @@ socket.on("countdownStart", (data) => {
   showCountdown(data.count);
 });
 
+/**
+ * 카운트다운 숫자 갱신
+ */
 socket.on("countdownTick", (count) => {
   if (count > 0) {
     showCountdown(count);
@@ -167,6 +230,9 @@ socket.on("countdownTick", (count) => {
   }
 });
 
+/**
+ * 게임 시작
+ */
 socket.on("gameStart", () => {
   hideWaitingOverlay();
 
@@ -186,6 +252,9 @@ socket.on("gameStart", () => {
   }
 });
 
+/**
+ * 보드 초기화
+ */
 socket.on("boardReset", (data) => {
   wordInput.disabled = true;
   wordInput.placeholder = "Ready 후 게임 시작을 기다려주세요.";
@@ -204,14 +273,23 @@ socket.on("boardReset", (data) => {
   }
 });
 
+/**
+ * 타이머 갱신
+ */
 socket.on("timerUpdate", (timeLeft) => {
   updateTimerUI(timeLeft);
 });
 
+/**
+ * 보드 점령 상태 갱신
+ */
 socket.on("updateBoard", (board) => {
   renderBoard(board);
 });
 
+/**
+ * 게임 종료
+ */
 socket.on("gameOver", (data) => {
   alert(
     `게임 종료 (${data.reason})\n\n` +
@@ -229,10 +307,24 @@ socket.on("gameOver", (data) => {
   roomInfo.innerText = `게임 종료 / ${data.winner}`;
 });
 
+/**
+ * 방 입장 실패
+ */
 socket.on("joinError", (message) => {
   alert(message);
 });
 
+/**
+ * 방 생성 실패
+ * 예: 방 최대 5개 초과
+ */
+socket.on("createRoomError", (message) => {
+  alert(message);
+});
+
+/**
+ * 단어 입력
+ */
 wordInput.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
 
@@ -245,6 +337,9 @@ wordInput.addEventListener("keydown", (e) => {
   wordInput.value = "";
 });
 
+/**
+ * 역할 UI 세팅
+ */
 function setRoleUI(role) {
   if (role === "p1") {
     roleDisplay.innerText = "당신은 슈리입니다.";
@@ -258,12 +353,18 @@ function setRoleUI(role) {
   }
 }
 
+/**
+ * 입력창 활성화
+ */
 function enableInput() {
   wordInput.disabled = false;
   wordInput.placeholder = "여기에 단어를 입력하고 엔터!";
   wordInput.focus();
 }
 
+/**
+ * 타이머 UI
+ */
 function updateTimerUI(timeLeft) {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -273,8 +374,18 @@ function updateTimerUI(timeLeft) {
   timerDisplay.style.color = timeLeft <= 10 ? "#e11d48" : "#101827";
 }
 
+/**
+ * 대기 오버레이 표시
+ */
 function showWaitingOverlay(mode = "room") {
   waitingOverlay.classList.remove("hidden");
+
+  if (myRoomId) {
+    waitingRoomCode.innerText = myRoomId;
+    waitingRoomCodeBox.classList.remove("hidden");
+  } else {
+    waitingRoomCodeBox.classList.add("hidden");
+  }
 
   if (myRole === "p1") {
     waitingCharacter.src = "shuri.png";
@@ -304,8 +415,16 @@ function showWaitingOverlay(mode = "room") {
   }
 }
 
+/**
+ * 카운트다운 표시
+ */
 function showCountdown(count) {
   waitingOverlay.classList.remove("hidden");
+
+  if (myRoomId) {
+    waitingRoomCode.innerText = myRoomId;
+    waitingRoomCodeBox.classList.remove("hidden");
+  }
 
   if (myRole === "p1") {
     waitingCharacter.src = "shuri.png";
@@ -320,10 +439,69 @@ function showCountdown(count) {
   waitingRole.style.color = "#101827";
 }
 
+/**
+ * 대기 오버레이 숨김
+ */
 function hideWaitingOverlay() {
   waitingOverlay.classList.add("hidden");
 }
 
+/**
+ * 방 리스트 렌더링
+ */
+function renderRoomList(rooms) {
+  if (!roomList) return;
+
+  roomList.innerHTML = "";
+
+  if (!rooms || rooms.length === 0) {
+    const emptyMessage = document.createElement("div");
+    emptyMessage.classList.add("empty-room-message");
+    emptyMessage.innerText = "새로운 방을 만들어주세요!";
+    roomList.appendChild(emptyMessage);
+    return;
+  }
+
+  rooms.forEach((room) => {
+    const roomItem = document.createElement("div");
+    roomItem.classList.add("room-item");
+
+    const isFull = room.playerCount >= room.maxPlayers;
+    const isPlaying = room.gameStarted || room.isCountingDown;
+
+    const statusText = isPlaying
+      ? "게임 중"
+      : isFull
+        ? "인원 가득 참"
+        : "입장 가능";
+
+    const roomText = document.createElement("div");
+    roomText.classList.add("room-item-text");
+
+    roomText.innerHTML = `
+            <strong>${room.roomId}</strong>
+            <span>${room.playerCount}/${room.maxPlayers} · ${statusText}</span>
+        `;
+
+    const joinButton = document.createElement("button");
+    joinButton.type = "button";
+    joinButton.innerText = "입장";
+    joinButton.disabled = isFull || isPlaying;
+
+    joinButton.addEventListener("click", () => {
+      socket.emit("joinRoom", room.roomId);
+    });
+
+    roomItem.appendChild(roomText);
+    roomItem.appendChild(joinButton);
+
+    roomList.appendChild(roomItem);
+  });
+}
+
+/**
+ * 보드 렌더링
+ */
 function renderBoard(board) {
   if (boardElement.children.length === 0) {
     board.forEach((tile) => {

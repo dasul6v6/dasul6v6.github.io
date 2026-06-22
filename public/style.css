@@ -779,3 +779,132 @@ h1 {
   font-weight: 850;
   line-height: 1.4;
 }
+
+.waiting-room-code-box {
+  width: fit-content;
+  max-width: 100%;
+  margin: 12px auto 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: rgba(250, 204, 21, 0.18);
+  border: 2px solid rgba(250, 204, 21, 0.7);
+  border-radius: 999px;
+}
+
+.waiting-room-code-label {
+  color: #66748a;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+#waiting-room-code {
+  padding: 5px 10px;
+  color: #101827;
+  background: #facc15;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  box-shadow: 0 3px 0 #ca8a04;
+}
+
+#waiting-copy-room-btn {
+  min-height: 30px;
+  padding: 0 10px;
+  color: #ffffff;
+  background: linear-gradient(180deg, #4f46e5, #312e81);
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 950;
+  box-shadow: 0 3px 0 #1e1b4b;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.room-list-wrap {
+  margin-top: 8px;
+  padding: 12px;
+  background: rgba(248, 250, 252, 0.86);
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+}
+
+.room-list-title {
+  margin-bottom: 8px;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty-room-message {
+  padding: 12px;
+  color: #66748a;
+  background: #ffffff;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 850;
+}
+
+.room-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.room-item-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.room-item-text strong {
+  color: #101827;
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.room-item-text span {
+  color: #66748a;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.room-item button {
+  min-height: 36px;
+  padding: 0 14px;
+  color: #ffffff;
+  background: linear-gradient(180deg, #4f46e5, #312e81);
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 950;
+  box-shadow: 0 4px 0 #1e1b4b;
+}
+
+.room-item button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
