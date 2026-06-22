@@ -1,69 +1,97 @@
 <!doctype html>
 <html lang="ko">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>NS 타자 땅따먹기 대결</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <main id="game-layout" aria-label="NS 타자 땅따먹기 대결">
-        <section class="team-panel team-shuri" aria-label="슈리 팀">
-            <img src="shuri.png" alt="슈리 캐릭터" class="team-character">
-            <div class="team-name">슈리</div>
-            <div id="shuri-score" class="team-score">0</div>
-        </section>
+      <section class="team-panel team-shuri" aria-label="슈리 팀">
+        <img src="shuri.png" alt="슈리 캐릭터" class="team-character" />
+        <div class="team-name">슈리</div>
+        <div id="shuri-score" class="team-score">0</div>
+      </section>
 
-        <section id="game-container"> 
-            <h1>NS 타자 땅따먹기 대결</h1>
-            <div class="battle-badge">슈리 VS 챌리</div>
-            <div id="role-display">접속 중...</div>
+      <section id="game-container">
+        <h1>NS 타자 땅따먹기 대결</h1>
+        <div class="battle-badge">슈리 VS 챌리</div>
 
-            <div id="timer-display">남은 시간: 01:30</div>
-            <div id="score-display">슈리: 0 | 챌리: 0</div>
+        <div id="role-display">방을 만들거나 입장해주세요.</div>
 
-            <div id="board" aria-label="단어 보드"></div>
+        <!-- 방 만들기 / 방 입장 / Ready 영역 -->
+        <div id="room-panel">
+          <button id="create-room-btn" type="button">방 만들기</button>
 
-            <div id="input-container">
-                <input
-                    type="text"
-                    id="word-input"
-                    placeholder="다른 플레이어를 기다리는 중입니다..."
-                    autocomplete="off"
-                    disabled
-                >
-                <button id="restart-btn" type="button">게임 다시 시작</button>
+          <div class="join-room-box">
+            <input
+              type="text"
+              id="room-id-input"
+              placeholder="방 코드 입력"
+              autocomplete="off"
+            />
+            <button id="join-room-btn" type="button">방 입장</button>
+          </div>
+
+          <div id="room-info">방을 만들거나 방 코드로 입장해주세요.</div>
+
+          <button id="ready-btn" type="button" disabled>Ready</button>
+        </div>
+
+        <div id="timer-display">남은 시간: 01:30</div>
+        <div id="score-display">SHURI 0 VS 0 CHALLI</div>
+
+        <div id="board" aria-label="단어 보드"></div>
+
+        <div id="input-container">
+          <input
+            type="text"
+            id="word-input"
+            placeholder="방을 만들거나 입장해주세요."
+            autocomplete="off"
+            disabled
+          />
+          <button id="restart-btn" type="button">게임 다시 시작</button>
+        </div>
+
+        <div id="waiting-overlay" class="waiting-overlay hidden">
+          <div class="waiting-card">
+            <div class="waiting-character-wrap">
+              <img
+                id="waiting-character"
+                src="shuri.png"
+                alt="내 캐릭터"
+                class="waiting-character"
+              />
             </div>
 
-            <div id="waiting-overlay" class="waiting-overlay hidden">
-                <div class="waiting-card">
-                    <div class="waiting-character-wrap">
-                        <img id="waiting-character" src="shuri.png" alt="내 캐릭터" class="waiting-character">
-                    </div>
-
-                    <div id="waiting-role" class="waiting-role">당신은 슈리입니다</div>
-                    <div id="waiting-title" class="waiting-title">다른 유저를 기다리는 중...</div>
-                    <div class="waiting-desc">
-                        상대가 접속하면 자동으로 대결이 시작됩니다.
-                    </div>
-
-                    <div class="loading-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </div>
+            <div id="waiting-role" class="waiting-role">대기 중</div>
+            <div id="waiting-title" class="waiting-title">
+              방을 만들거나 입장해주세요
             </div>
-        </section>
+            <div class="waiting-desc">
+              방을 만든 뒤 상대에게 방 코드를 공유해주세요. 두 플레이어가 모두
+              Ready를 누르면 5초 뒤 게임이 시작됩니다.
+            </div>
 
-        <section class="team-panel team-challi" aria-label="챌리 팀">
-            <img src="challi.png" alt="챌리 캐릭터" class="team-character">
-            <div class="team-name">챌리</div>
-            <div id="challi-score" class="team-score">0</div>
-        </section>
+            <div class="loading-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="team-panel team-challi" aria-label="챌리 팀">
+        <img src="challi.png" alt="챌리 캐릭터" class="team-character" />
+        <div class="team-name">챌리</div>
+        <div id="challi-score" class="team-score">0</div>
+      </section>
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
-</body>
+  </body>
 </html>
