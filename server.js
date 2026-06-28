@@ -486,7 +486,7 @@ io.on("connection", (socket) => {
 
     if (changed) {
       io.to(currentRoomId).emit("updateBoard", room.board);
-      checkBoardComplete(currentRoomId);
+      //   checkBoardComplete(currentRoomId);
     }
   });
 
@@ -623,17 +623,17 @@ function startTimer(roomId) {
 /**
  * 모든 판이 점령됐는지 확인
  */
-function checkBoardComplete(roomId) {
-  const room = rooms[roomId];
-  if (!room) return;
+// function checkBoardComplete(roomId) {
+//   const room = rooms[roomId];
+//   if (!room) return;
 
-  const isGameOver = room.board.every((tile) => tile.owner !== null);
+//   const isGameOver = room.board.every((tile) => tile.owner !== null);
 
-  if (isGameOver) {
-    clearInterval(room.timerInterval);
-    endGame(roomId, "모든 판 점령!");
-  }
-}
+//   if (isGameOver) {
+//     clearInterval(room.timerInterval);
+//     endGame(roomId, "모든 판 점령!");
+//   }
+// }
 
 /**
  * 게임 종료
